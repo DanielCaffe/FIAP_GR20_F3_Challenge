@@ -9,7 +9,7 @@
 # Nome do projeto
 Plataforma SaaS de Manutenção Preditiva com Cooperação Industrial Inteligente
 ## Nome do grupo
-
+Graduação - 1TIAOB - 2025/1 - Grupo 20 
 ## 👨‍🎓 Integrantes: 
 - <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 1</a>
 - <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 2</a>
