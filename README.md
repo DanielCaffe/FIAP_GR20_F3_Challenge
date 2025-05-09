@@ -185,6 +185,15 @@ ARQUITETURA DA SOLUÇÃO:
 
  ![Diagrama Arquitetura Saas](https://github.com/user-attachments/assets/c748f3e6-4366-4892-bd0a-3bec09ba42cf)
 
+DIVISÃO DAS RESPONSABILIDADES:
+
+| Fase                                  | Responsável Principal
+|---------------------------------------|-----------------------
+|1 Planejamento e Definição Técnica     | Juliano
+|2 Simulação e Coleta de Dados          | Daniel
+|3 Armazenamento e Pipeline de Dados    | Larissa
+|4 Modelagem e Predição de Falhas       | Enrico
+|5 Dashboards, Alertas e Relatórios     | Davi
 
 
 
