@@ -7,7 +7,7 @@
 <br>
 
 # Nome do projeto
-
+Plataforma SaaS de Manutenção Preditiva com Cooperação Industrial Inteligente
 ## Nome do grupo
 
 ## 👨‍🎓 Integrantes: 
