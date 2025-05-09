@@ -11,7 +11,7 @@ Plataforma SaaS de Manutenção Preditiva com Cooperação Industrial Inteligent
 ## Nome do grupo
 Graduação - 1TIAOB - 2025/1 - Grupo 20 
 ## 👨‍🎓 Integrantes: 
-- <a href="linkedin.com/in/danielcaffe">Daniel Caffé RM564440 </a>
+- <a href="https://www.linkedin.com/in/danielcaffe">Daniel Caffé RM564440 </a>
 - <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 2</a>
 - <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 3</a> 
 - <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 4</a> 
