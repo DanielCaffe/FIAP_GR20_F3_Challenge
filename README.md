@@ -183,7 +183,8 @@ o	Data augmentation para suprir a escassez de rótulos.
 
 ARQUITETURA DA SOLUÇÃO:
 
- 
+ ![Diagrama Arquitetura Saas](https://github.com/user-attachments/assets/c748f3e6-4366-4892-bd0a-3bec09ba42cf)
+
 
 
 
