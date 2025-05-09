@@ -26,7 +26,6 @@ Graduação - 1TIAOB - 2025/1 - Grupo 20
 
 ## 📜 Descrição
 
-*Descreva seu projeto com base no texto do PBL (até 600 palavras)*
 PROPOSTA TÉCNICA ENTERPRISE CHALLENGE – Sprint 1 - Reply
 Em pesquisa realizada em artigos científicos recentes que abordam os principais desafios da manutenção preditiva no setor automotivo, especialmente aqueles que ainda carecem de soluções definitivas, realizamos uma análise dos artigos abaixo com foco em identificar os principais desafios na análise preditiva de manutenção de equipamentos industriais, especialmente com aplicação no setor automotivo, mas também válidos para setores industriais em geral.
 ________________________________________
