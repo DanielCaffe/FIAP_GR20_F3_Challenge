@@ -13,9 +13,9 @@ Graduação - 1TIAOB - 2025/1 - Grupo 20
 ## 👨‍🎓 Integrantes: 
 - <a href="https://www.linkedin.com/in/danielcaffe">Daniel Caffé RM564440 </a>
 - Juliano RM561930 </a>
-- <a href="https://www.linkedin.com/company/inova-fusca">Larissa RM566418 </a> 
-- <a href="https://www.linkedin.com/company/inova-fusca">Enrico RM561352 </a> 
-- <a href="https://www.linkedin.com/company/inova-fusca">Davi RM566336 </a>
+- Larissa RM566418 </a> 
+- Enrico RM561352 </a> 
+- Davi RM566336 </a>
 
 ## 👩‍🏫 Professores:
 ### Tutor(a) 
