@@ -12,10 +12,10 @@ Plataforma SaaS de Manutenção Preditiva com Cooperação Industrial Inteligent
 Graduação - 1TIAOB - 2025/1 - Grupo 20 
 ## 👨‍🎓 Integrantes: 
 - <a href="https://www.linkedin.com/in/danielcaffe">Daniel Caffé RM564440 </a>
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 2</a>
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 3</a> 
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 4</a> 
-- <a href="https://www.linkedin.com/company/inova-fusca">Nome do integrante 5</a>
+- <a href="https://www.linkedin.com/company/inova-fusca">Juliano RM561930 </a>
+- <a href="https://www.linkedin.com/company/inova-fusca">Larissa RM566418 </a> 
+- <a href="https://www.linkedin.com/company/inova-fusca">Enrico RM561352 </a> 
+- <a href="https://www.linkedin.com/company/inova-fusca">Davi RM566336 </a>
 
 ## 👩‍🏫 Professores:
 ### Tutor(a) 
