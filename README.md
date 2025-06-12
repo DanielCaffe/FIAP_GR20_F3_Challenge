@@ -275,6 +275,7 @@ Esses dados serão utilizados nas próximas etapas do projeto como base para **m
 ## 🗃 Histórico de lançamentos
 
 * 0.1.0 - 09/05/2025
+* 0.2.0 - 11/06/2025
     *
 
 ## 📋 Licença
