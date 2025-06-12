@@ -9,7 +9,7 @@
 # Nome do projeto
 **Sistema simulado de monitoramento industrial e manutenção preditiva**
 ## Nome do grupo
-Graduação - 1TIAOB - 2025/1 - Grupo 20 
+Graduação - 1TIAOB - 2025/1 
 ## 👨‍🎓 Integrantes: 
 - <a href="https://www.linkedin.com/in/danielcaffe">Daniel Caffé RM564440 </a>
 - Ednilton RM566069 </a>
