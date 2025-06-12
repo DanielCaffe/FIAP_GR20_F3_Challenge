@@ -258,7 +258,7 @@ DIVISÃO DAS RESPONSABILIDADES:
 
 | Fase                                  | Responsável Principal
 |---------------------------------------|-----------------------
-|1 Planejamento e Definição Técnica     | Juliano
+|1 Planejamento e Definição Técnica     | Ednilton
 |2 Simulação e Coleta de Dados          | Daniel
 |3 Armazenamento e Pipeline de Dados    | Larissa
 |4 Modelagem e Predição de Falhas       | Enrico
