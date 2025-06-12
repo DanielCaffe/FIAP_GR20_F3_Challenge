@@ -219,7 +219,7 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 *Acrescentar as informações necessárias sobre pré-requisitos (IDEs, serviços, bibliotecas etc.) e instalação básica do projeto, descrevendo eventuais versões utilizadas. Colocar um passo a passo de como o leitor pode baixar o seu código e executá-lo a partir de sua máquina ou seu repositório. Considere a explicação organizada em fase.*
 
-## 🧪 simulação da sprint 2 — coleta e análise de dados
+## 🧪 Simulação da sprint 2 — coleta e análise de dados
 
 Nesta etapa prática, foi implementado um circuito funcional com ESP32, integrando dois sensores virtuais no simulador Wokwi:
 
@@ -228,14 +228,14 @@ Nesta etapa prática, foi implementado um circuito funcional com ESP32, integran
 
 Esses sensores foram conectados eletricamente no simulador e tiveram sua leitura programada em um código `.ino`. Os dados simulados foram coletados através do **Monitor Serial**, salvos em `.csv` e analisados usando um script em **Python** com bibliotecas como `pandas` e `matplotlib`.
 
-### 📷 imagens da simulação e do circuito
+### 📷 Imagens da simulação e do circuito
 
 <p align="center">
   <img src="assets/temperatura_umidade.png" width="48%">
   <img src="assets/aceleracao.png" width="48%">
 </p>
 
-### 📁 arquivos da sprint 2
+### 📁 Arquivos da sprint 2
 
 | tipo              | nome do arquivo                        | descrição                                       |
 |------------------|----------------------------------------|------------------------------------------------  |
@@ -245,14 +245,14 @@ Esses sensores foram conectados eletricamente no simulador e tiveram sua leitura
 | estatísticas     | `estatisticas.txt`                     | min, máx e média dos sensores simulados          |
 | link do projeto  | `wokwi_project_link.txt`               | link para simulação pública no Wokwi             |
 
-### 📈 gráficos gerados
+### 📈 Gráficos gerados
 
 - **temperatura e umidade ao longo do tempo**
 - **aceleração nos eixos X, Y e Z (simulação de vibração)**
 
 As leituras foram feitas com intervalo de 2 segundos, simulando variações suaves nos dados como ocorrem em equipamentos em operação estável.
 
-### 🔍 resumo dos dados analisados
+### 🔍 Resumo dos dados analisados
 
 | variável     | média     | mínima     | máxima     |
 |--------------|-----------|------------|------------|
