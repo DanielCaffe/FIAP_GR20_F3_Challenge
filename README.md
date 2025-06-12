@@ -223,12 +223,6 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 ## como executar o script de análise
 
-## Execute o comando:
-
-```bash
-python scripts/analise_dados.py
-```
-
 Nesta etapa prática, foi implementado um circuito funcional com ESP32, integrando dois sensores virtuais no simulador Wokwi:
 
 - **Sensor de temperatura e umidade DHT22**
