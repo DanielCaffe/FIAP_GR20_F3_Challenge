@@ -221,10 +221,23 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 ## 🧪 Simulação da sprint 2 — coleta e análise de dados
 
+## como executar o script de análise
+
+## Execute o comando:
+
+```bash
+python scripts/analise_dados.py
+```
+
 Nesta etapa prática, foi implementado um circuito funcional com ESP32, integrando dois sensores virtuais no simulador Wokwi:
 
 - **Sensor de temperatura e umidade DHT22**
 - **Sensor de aceleração MPU6050**
+- 
+## Sensores utilizados e justificativa
+
+- **DHT22 (temperatura e umidade):** amplamente utilizado em aplicações de ambiente industrial para monitoramento térmico.
+- **MPU6050 (aceleração nos eixos X, Y e Z):** simula vibração e movimento, fundamental para prever desgaste mecânico em equipamentos.
 
 Esses sensores foram conectados eletricamente no simulador e tiveram sua leitura programada em um código `.ino`. Os dados simulados foram coletados através do **Monitor Serial**, salvos em `.csv` e analisados usando um script em **Python** com bibliotecas como `pandas` e `matplotlib`.
 
