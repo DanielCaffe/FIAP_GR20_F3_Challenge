@@ -219,6 +219,51 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 *Acrescentar as informações necessárias sobre pré-requisitos (IDEs, serviços, bibliotecas etc.) e instalação básica do projeto, descrevendo eventuais versões utilizadas. Colocar um passo a passo de como o leitor pode baixar o seu código e executá-lo a partir de sua máquina ou seu repositório. Considere a explicação organizada em fase.*
 
+## 🧪 simulação da sprint 2 — coleta e análise de dados
+
+Nesta etapa prática, foi implementado um circuito funcional com ESP32, integrando dois sensores virtuais no simulador Wokwi:
+
+- **Sensor de temperatura e umidade DHT22**
+- **Sensor de aceleração MPU6050**
+
+Esses sensores foram conectados eletricamente no simulador e tiveram sua leitura programada em um código `.ino`. Os dados simulados foram coletados através do **Monitor Serial**, salvos em `.csv` e analisados usando um script em **Python** com bibliotecas como `pandas` e `matplotlib`.
+
+### 📷 imagens da simulação e do circuito
+
+<p align="center">
+  <img src="assets/temperatura_umidade.png" width="48%">
+  <img src="assets/aceleracao.png" width="48%">
+</p>
+
+### 📁 arquivos da sprint 2
+
+| tipo              | nome do arquivo                        | descrição                                       |
+|------------------|----------------------------------------|------------------------------------------------  |
+| código arduino   | `leitura_sensores.ino`                 | coleta dados de temperatura, umidade e aceleração|
+| dados coletados  | `dados_coletados.csv`                  | dados simulados extraídos do monitor serial      |
+| script python    | `analise_dados.py`                     | analisa dados e gera gráficos                    |
+| estatísticas     | `estatisticas.txt`                     | min, máx e média dos sensores simulados          |
+| link do projeto  | `wokwi_project_link.txt`               | link para simulação pública no Wokwi             |
+
+### 📈 gráficos gerados
+
+- **temperatura e umidade ao longo do tempo**
+- **aceleração nos eixos X, Y e Z (simulação de vibração)**
+
+As leituras foram feitas com intervalo de 2 segundos, simulando variações suaves nos dados como ocorrem em equipamentos em operação estável.
+
+### 🔍 resumo dos dados analisados
+
+| variável     | média     | mínima     | máxima     |
+|--------------|-----------|------------|------------|
+| temperatura  | ~26.4°C   | 24.0°C     | 29.4°C     |
+| umidade      | ~62.0%    | 59.5%      | 65.0%      |
+| acc_x        | ~0.00 g   | -0.02 g    | +0.03 g    |
+| acc_y        | ~0.00 g   | -0.03 g    | +0.02 g    |
+| acc_z        | ~1.00 g   | 0.98 g     | 1.03 g     |
+
+Esses dados serão utilizados nas próximas etapas do projeto como base para **modelos preditivos de falhas** e **testes com redes neurais** em ambientes simulados de fábrica digital.
+
 
 ## 🗃 Histórico de lançamentos
 

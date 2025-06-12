@@ -1,0 +1,4 @@
+Projeto Wokwi funcional:
+https://wokwi.com/projects/433515081185119233
+
+Este link contém a simulação completa do projeto com ESP32, DHT22 e MPU6050.
