@@ -1,0 +1,56 @@
+<mxfile host="app.diagrams.net" modified="2025-09-09T00:00:00.000Z" agent="python" version="20.8.23" type="device">
+  <diagram id="ERD" name="DER - Sensors DB">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- MACHINE entity -->
+        <mxCell id="machine" value="&lt;b&gt;MACHINE&lt;/b&gt;&lt;br/&gt;machine_id : INTEGER (PK)&lt;br/&gt;name : VARCHAR(100) NOT NULL&lt;br/&gt;location : VARCHAR(100)" style="shape=rectangle;whiteSpace=wrap;rounded=1;glass=0;shadow=0;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="120" width="320" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- SENSOR entity -->
+        <mxCell id="sensor" value="&lt;b&gt;SENSOR&lt;/b&gt;&lt;br/&gt;sensor_id : INTEGER (PK)&lt;br/&gt;machine_id : INTEGER (FK)&lt;br/&gt;model : VARCHAR(40) NOT NULL&lt;br/&gt;interface : VARCHAR(20) NOT NULL&lt;br/&gt;pin_data : INTEGER&lt;br/&gt;i2c_addr : VARCHAR(10)" style="shape=rectangle;whiteSpace=wrap;rounded=1;glass=0;shadow=0;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="120" width="360" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- READING_ENV entity -->
+        <mxCell id="reading_env" value="&lt;b&gt;READING_ENV&lt;/b&gt;&lt;br/&gt;reading_id : BIGINT (PK)&lt;br/&gt;sensor_id : INTEGER (FK)&lt;br/&gt;ts : TIMESTAMP NOT NULL&lt;br/&gt;temperature_c : REAL&lt;br/&gt;humidity_pct : REAL (0-100)" style="shape=rectangle;whiteSpace=wrap;rounded=1;glass=0;shadow=0;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="60" width="360" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- READING_IMU entity -->
+        <mxCell id="reading_imu" value="&lt;b&gt;READING_IMU&lt;/b&gt;&lt;br/&gt;reading_id : BIGINT (PK)&lt;br/&gt;sensor_id : INTEGER (FK)&lt;br/&gt;ts : TIMESTAMP NOT NULL&lt;br/&gt;acc_x_g : REAL&lt;br/&gt;acc_y_g : REAL&lt;br/&gt;acc_z_g : REAL" style="shape=rectangle;whiteSpace=wrap;rounded=1;glass=0;shadow=0;strokeWidth=2;fillColor=#fdecea;strokeColor=#e07a5f;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="260" width="360" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- Relationships -->
+        <!-- MACHINE 1..N SENSOR -->
+        <mxCell id="rel_machine_sensor" value="1:N" style="endArrow=block;endFill=1;strokeWidth=2;rounded=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="machine" target="sensor">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="460" y="180" as="sourcePoint"/>
+            <mxPoint x="580" y="195" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SENSOR 1..N READING_ENV -->
+        <mxCell id="rel_sensor_env" value="1:N" style="endArrow=block;endFill=1;strokeWidth=2;rounded=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="sensor" target="reading_env">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="940" y="140" as="sourcePoint"/>
+            <mxPoint x="1060" y="130" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SENSOR 1..N READING_IMU -->
+        <mxCell id="rel_sensor_imu" value="1:N" style="endArrow=block;endFill=1;strokeWidth=2;rounded=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="sensor" target="reading_imu">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="940" y="220" as="sourcePoint"/>
+            <mxPoint x="1060" y="320" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
