@@ -13,7 +13,6 @@ Graduação - 1TIAOB - 2025/1
 ## 👨‍🎓 Integrantes: 
 - <a href="https://www.linkedin.com/in/danielcaffe">Daniel Caffé RM564440 </a>
 - Ednilton RM566069 </a>
-- Larissa RM566418 </a> 
 - Enrico RM561352 </a> 
 - Davi RM566336 </a>
 
@@ -340,6 +339,50 @@ As leituras foram feitas com intervalo de 2 segundos, simulando variações suav
 
 Esses dados serão utilizados nas próximas etapas do projeto como base para **modelos preditivos de falhas** e **testes com redes neurais** em ambientes simulados de fábrica digital.
 
+# Fase 5 — Hermes Reply (BD + ML)
+
+## Banco de Dados
+- Ferramenta do DER: **draw.io** (versátil e leve).
+- Diagrama ER: `database/modelo_ER.png`  
+- Script de criação: `database/script.sql`
+
+**Tabelas:** MACHINE, SENSOR, READING_ENV, READING_IMU  
+**Relacionamentos:** MACHINE 1:N SENSOR; SENSOR 1:N READING_ENV; SENSOR 1:N READING_IMU.
+
+## Execução do banco (SQLite)
+```bash
+sqlite3 database/factory.db ".read database/script.sql"
+sqlite3 database/factory.db ".mode csv" ".import --skip 1 document/dataset_env.csv STG_ENV" ".import --skip 1 document/dataset_imu.csv STG_IMU"
+sqlite3 database/factory.db ".read database/load_from_staging.sql"
+```
+## Verificação esperada:
+
+SENSORS|2
+READING_ENV|500
+READING_IMU|500
+
+## Machine Learning (Scikit-learn)
+
+- **Script:** `ml/treino.py`  
+- **Métrica:** Accuracy  
+
+### Tarefas
+- ENV (DHT22): classificar **NORMAL** vs **CRITICO** (T > 40 °C, H < 20% ou H > 80%)  
+- IMU (MPU6050): classificar **NORMAL** vs **CRITICO** (norma do vetor > 2.5 g)  
+
+### Resultados obtidos
+- ENV → Accuracy **0.9933**  
+- IMU → Accuracy **0.9267**  
+
+### Matrizes de confusão
+![ENV](ml/env_confusion.png) ![IMU](ml/imu_confusion.png)
+
+### Dados utilizados
+- `document/dataset_env.csv` (≥500 leituras do DHT22)  
+- `document/dataset_imu.csv` (≥500 leituras do MPU6050)  
+
+### Vídeo (≤ 5 min)
+- URL:""
 
 ## 🗃 Histórico de lançamentos
 

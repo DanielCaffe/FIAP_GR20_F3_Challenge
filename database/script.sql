@@ -1,6 +1,8 @@
 PRAGMA foreign_keys = ON;
 
--- Tabelas principais
+-- =========================
+-- ESQUEMA PRINCIPAL
+-- =========================
 CREATE TABLE IF NOT EXISTS MACHINE (
   machine_id   INTEGER PRIMARY KEY,
   name         VARCHAR(100) NOT NULL,
@@ -43,3 +45,34 @@ CREATE TABLE IF NOT EXISTS READING_IMU (
 -- Índices úteis
 CREATE INDEX IF NOT EXISTS idx_env_sensor_ts ON READING_ENV (sensor_id, ts);
 CREATE INDEX IF NOT EXISTS idx_imu_sensor_ts ON READING_IMU (sensor_id, ts);
+
+-- =========================
+-- DADOS MÍNIMOS (MACHINE/SENSOR)
+-- =========================
+INSERT OR IGNORE INTO MACHINE (machine_id, name, location)
+VALUES (1, 'Linha A', 'Setor 1');
+
+INSERT OR IGNORE INTO SENSOR (sensor_id, machine_id, model, interface, pin_data)
+VALUES (101, 1, 'DHT22', 'GPIO', 15);
+
+INSERT OR IGNORE INTO SENSOR (sensor_id, machine_id, model, interface, i2c_addr)
+VALUES (102, 1, 'MPU6050', 'I2C', '0x68');
+
+-- =========================
+-- STAGING PARA .IMPORT DE CSV
+-- (NÃO TEM PK/FK — APENAS ATERRISSA O CSV)
+-- =========================
+DROP TABLE IF EXISTS STG_ENV;
+CREATE TABLE STG_ENV (
+  timestamp     TEXT,
+  temperature_c REAL,
+  humidity_pct  REAL
+);
+
+DROP TABLE IF EXISTS STG_IMU;
+CREATE TABLE STG_IMU (
+  timestamp TEXT,
+  acc_x_g   REAL,
+  acc_y_g   REAL,
+  acc_z_g   REAL
+);
