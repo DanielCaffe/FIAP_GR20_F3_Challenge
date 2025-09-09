@@ -382,7 +382,7 @@ READING_IMU|500
 - `document/dataset_imu.csv` (≥500 leituras do MPU6050)  
 
 ### Vídeo (≤ 5 min)
-- URL:""
+- URL:"https://youtu.be/IBZ7BStmcsk"
 
 ## 🗃 Histórico de lançamentos
 

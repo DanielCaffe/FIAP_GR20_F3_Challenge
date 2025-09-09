@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS MACHINE (
 CREATE TABLE IF NOT EXISTS SENSOR (
   sensor_id    INTEGER PRIMARY KEY,
   machine_id   INTEGER NOT NULL,
-  model        VARCHAR(40)  NOT NULL, -- 'DHT22' ou 'MPU6050'
-  interface    VARCHAR(20)  NOT NULL, -- 'GPIO' ou 'I2C'
+  model        VARCHAR(40)  NOT NULL, 
+  interface    VARCHAR(20)  NOT NULL, 
   pin_data     INTEGER,
   i2c_addr     VARCHAR(10),
   CONSTRAINT fk_sensor_machine
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS READING_IMU (
     FOREIGN KEY (sensor_id) REFERENCES SENSOR(sensor_id)
 );
 
--- Índices úteis
+-- Índices 
 CREATE INDEX IF NOT EXISTS idx_env_sensor_ts ON READING_ENV (sensor_id, ts);
 CREATE INDEX IF NOT EXISTS idx_imu_sensor_ts ON READING_IMU (sensor_id, ts);
 
