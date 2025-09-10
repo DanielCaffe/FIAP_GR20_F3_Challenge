@@ -346,6 +346,29 @@ Esses dados serão utilizados nas próximas etapas do projeto como base para **m
 - Diagrama ER: `database/modelo_ER.png`  
 - Script de criação: `database/script.sql`
 
+### Como o banco de dados foi modelado
+- Modelado a partir de um **DER** criado no draw.io.  
+- Tabelas principais: `MACHINE`, `SENSOR`, `READING_ENV`, `READING_IMU`.  
+- Relacionamentos 1:N entre máquina → sensor e sensor → leituras.  
+- Criadas também tabelas de **staging (STG_ENV, STG_IMU)** para importar os CSVs simulados.  
+- Dados transferidos para as tabelas finais usando o script `load_from_staging.sql`.
+
+### Como foi feita a implementação do ML
+- Implementado em **Python** com **Scikit-learn**.  
+- Script principal: `ml/treino.py`.  
+- Modelo utilizado: **Random Forest Classifier**.  
+- Classificação binária:  
+  - **DHT22 (ENV):** NORMAL vs CRÍTICO (T > 40°C, H < 20% ou H > 80%).  
+  - **MPU6050 (IMU):** NORMAL vs CRÍTICO (norma do vetor > 2.5 g).  
+
+### Principais resultados obtidos
+- **DHT22 (ENV):** Accuracy **0.9933**, apenas 1 erro em 150 leituras de teste.  
+- **MPU6050 (IMU):** Accuracy **0.9267**, alguns erros de classificação mas desempenho satisfatório.  
+- Matrizes de confusão geradas em:  
+  - `ml/env_confusion.png`  
+  - `ml/imu_confusion.png`  
+
+
 **Tabelas:** MACHINE, SENSOR, READING_ENV, READING_IMU  
 **Relacionamentos:** MACHINE 1:N SENSOR; SENSOR 1:N READING_ENV; SENSOR 1:N READING_IMU.
 
