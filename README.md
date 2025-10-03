@@ -431,6 +431,44 @@ READING_IMU|500
      - `database/load_from_staging.sql` (carga a partir dos CSVs).  
    - Garantia de integridade com **chaves primárias e estrangeiras**.  
 
+## 🚀 Como executar
+
+1. Criar e popular o banco de dados:
+
+> Pré-requisitos: Python 3.10+, `pip install -r requirements.txt` (pandas, numpy, scikit-learn, matplotlib).  
+> No Windows, se o comando `sqlite3` não estiver no PATH, use o caminho completo do executável como no exemplo abaixo.
+
+```powershell
+# Windows PowerShell (ajuste o caminho do sqlite3.exe se necessário)
+
+> Obs.: Os comandos abaixo usam o caminho absoluto do meu PC (Windows).  
+> Caso `sqlite3` esteja configurado no PATH, basta rodar sem o caminho completo, por exemplo:
+> ```bash
+> sqlite3 database/factory.db ".read database/script.sql"
+> ```
+& "B:\ENRICO\sql\sqlite-tools-win-x64-3500400\sqlite3.exe" database/factory.db ".read database/script.sql"
+& "B:\ENRICO\sql\sqlite-tools-win-x64-3500400\sqlite3.exe" database/factory.db ".mode csv" ".import --skip 1 document/dataset_env.csv STG_ENV" "import--skip1 document/dataset_imu.csv STG_IMU"
+& "B:\ENRICO\sql\sqlite-tools-win-x64-3500400\sqlite3.exe" database/factory.db ".read database/load_from_staging.sql"
+```
+2. Conferir se o banco foi populado corretamente:
+
+SELECT COUNT(*) AS SENSOR FROM SENSOR;
+SELECT COUNT(*) AS READING_ENV FROM READING_ENV;
+SELECT COUNT(*) AS READING_IMU FROM READING_IMU;
+
+ - Saída esperada:
+   SENSORS|2
+   READING_ENV|500
+   READING_IMU|500
+
+
+3. Rodar o treino de Machine Learning:
+
+- Acurácia exibida no console
+- Matrizes de confusão geradas em: 
+   - ml/env_confusion.png
+   - ml/imu_confusion.png  
+
 4. **Machine Learning (Scikit-learn)**  
    - Script: `ml/treino.py`  
    - Modelo: **RandomForestClassifier**  
@@ -450,7 +488,7 @@ READING_IMU|500
      - Umidade < 20% ou > 80% → **CRÍTICO**  
      - Aceleração > 2.5 g → **CRÍTICO**  
    - Geração de alertas simulados em tempo real.  
-   
+
 ## 🗃 Histórico de lançamentos
 
 * 0.1.0 - 09/05/2025
