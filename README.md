@@ -357,7 +357,7 @@ Esses dados serão utilizados nas próximas etapas do projeto como base para **m
 - Implementado em **Python** com **Scikit-learn**.  
 - Script principal: `ml/treino.py`.  
 - Modelo utilizado: **Random Forest Classifier**.  
-- Classificação binária:  
+- Classificação binária:
   - **DHT22 (ENV):** NORMAL vs CRÍTICO (T > 40°C, H < 20% ou H > 80%).  
   - **MPU6050 (IMU):** NORMAL vs CRÍTICO (norma do vetor > 2.5 g).  
 
@@ -407,6 +407,50 @@ READING_IMU|500
 ### Vídeo (≤ 5 min)
 - URL:"https://youtu.be/IBZ7BStmcsk"
 
+## Arquitetura Final
+
+![Arquitetura Final](document/drawio/arquitetura_final.drawio.png)
+### Fluxo do MVP
+
+1. **Coleta (ESP32 / Simulação - Wokwi)**  
+   - Sensores utilizados:  
+     - **DHT22** → temperatura e umidade  
+     - **MPU6050** → aceleração (eixos X, Y, Z)  
+   - Leituras periódicas (~2s) exportadas em CSV.  
+
+2. **Ingestão**  
+   - Leituras capturadas pelo **Monitor Serial** e exportadas para os arquivos:  
+     - `document/dataset_env.csv`  
+     - `document/dataset_imu.csv`  
+   - Formato utilizado: **CSV**.  
+
+3. **Banco de Dados (SQLite)**  
+   - Tabelas principais: `MACHINE`, `SENSOR`, `READING_ENV`, `READING_IMU`.  
+   - Scripts:  
+     - `database/script.sql` (criação das tabelas)  
+     - `database/load_from_staging.sql` (carga a partir dos CSVs).  
+   - Garantia de integridade com **chaves primárias e estrangeiras**.  
+
+4. **Machine Learning (Scikit-learn)**  
+   - Script: `ml/treino.py`  
+   - Modelo: **RandomForestClassifier**  
+   - Objetivo: classificar estados **NORMAL** vs **CRÍTICO**.  
+   - Saídas:  
+     - Acurácia obtida:  
+       - **ENV** → 0.9933  
+       - **IMU** → 0.9267  
+     - Matrizes de confusão salvas em:  
+       - `ml/env_confusion.png`  
+       - `ml/imu_confusion.png`.  
+
+5. **Dashboard / Alertas**  
+   - Possível implementação em **Streamlit** ou notebook.  
+   - Métricas monitoradas (KPIs):  
+     - Temperatura > 40 °C → **CRÍTICO**  
+     - Umidade < 20% ou > 80% → **CRÍTICO**  
+     - Aceleração > 2.5 g → **CRÍTICO**  
+   - Geração de alertas simulados em tempo real.  
+   
 ## 🗃 Histórico de lançamentos
 
 * 0.1.0 - 09/05/2025
