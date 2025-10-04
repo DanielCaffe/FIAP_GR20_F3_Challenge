@@ -431,7 +431,24 @@ READING_IMU|500
      - `database/load_from_staging.sql` (carga a partir dos CSVs).  
    - Garantia de integridade com **chaves primárias e estrangeiras**.  
 
-## 🚀 Como executar
+## 🖥️ Dashboard / Interface (Streamlit)
+
+### Rodar localmente
+```powershell
+# Instalar dependências (uma vez)
+pip install -r requirements.txt
+
+# Executar o app
+streamlit run dashboard/app.py
+```
+ - O app abre em: http://localhost:8501
+   - Use a barra lateral para escolher a fonte de dados (SQLite ou CSV).
+   - Os alertas são disparados quando:
+      - Temperatura > limite configurado
+      - Umidade < min ou > max configurados
+      - Norma da aceleração > limiar configurado
+
+## 🚀 Como executar manualmente
 
 1. Criar e popular o banco de dados:
 
@@ -494,6 +511,7 @@ SELECT COUNT(*) AS READING_IMU FROM READING_IMU;
 * 0.1.0 - 09/05/2025
 * 0.2.0 - 11/06/2025
 * 0.3.0 - 07/09/2025
+* 1.0.0 - 01/10/2025
 
 ## 📋 Licença
 
