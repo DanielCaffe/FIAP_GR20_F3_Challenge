@@ -7,9 +7,9 @@ from pathlib import Path
 st.set_page_config(page_title="Monitoramento Industrial", layout="wide")
 st.title("🏭 Monitoramento Industrial – MVP")
 
-DB_PATH = Path("database/factory.db")
-CSV_ENV = Path("document/dataset_env.csv")
-CSV_IMU = Path("document/dataset_imu.csv")
+DB_PATH = Path("../database/factory.db")
+CSV_ENV = Path("../document/dataset_env.csv")
+CSV_IMU = Path("../document/dataset_imu.csv")
 
 @st.cache_data
 def load_from_sqlite():

@@ -1,11 +1,16 @@
 import os
 import math
-import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+from scipy import stats
+from sklearn.ensemble import RandomForestClassifier, IsolationForest
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import precision_recall_fscore_support
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
 
 # Caminhos
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -13,90 +18,272 @@ REPO_DIR = os.path.dirname(BASE_DIR)
 DOC_DIR = os.path.join(REPO_DIR, "document")
 OUT_ENV_IMG = os.path.join(BASE_DIR, "env_confusion.png")
 OUT_IMU_IMG = os.path.join(BASE_DIR, "imu_confusion.png")
+OUT_FEATURE_IMPORTANCE = os.path.join(BASE_DIR, "feature_importance.png")
 
-# ======================
-# 1) Dataset ENV (DHT22)
-# ======================
-env = pd.read_csv(os.path.join(DOC_DIR, "dataset_env.csv"))
-# Regras de rótulo (NORMAL/CRITICO)
-def rotulo_env(row):
-    t = row["temperature_c"]
-    h = row["humidity_pct"]
-    if t > 40 or h < 20 or h > 80:
-        return 1  # CRITICO
-    return 0      # NORMAL
+class PredictiveMaintenanceModel:
+    def __init__(self):
+        self.scaler = StandardScaler()
+        self.anomaly_detector = IsolationForest(contamination=0.1, random_state=42)
+        self.classifier = RandomForestClassifier(n_estimators=200, random_state=42)
+        self.feature_importance = None
+        
+    def extract_features(self, data):
+        """
+        Extrai características baseadas em artigos científicos sobre manutenção preditiva
+        Ref: "Predictive maintenance enabled by machine learning: Use cases and challenges"
+        """
+        features = {}
+        
+        # Características estatísticas (baseadas no artigo 1)
+        features['mean'] = np.mean(data)
+        features['std'] = np.std(data)
+        features['rms'] = np.sqrt(np.mean(np.square(data)))
+        
+        # Características do domínio da frequência (artigo 2)
+        freq_features = np.abs(np.fft.fft(data))
+        features['freq_peak'] = np.max(freq_features)
+        features['freq_mean'] = np.mean(freq_features)
+        
+        # Indicadores de tendência (artigo 3)
+        features['trend'] = stats.linregress(range(len(data)), data)[0]
+        features['kurtosis'] = stats.kurtosis(data)
+        features['skewness'] = stats.skew(data)
+        
+        return features
 
-env["label"] = env.apply(rotulo_env, axis=1).astype(int)
-X_env = env[["temperature_c", "humidity_pct"]].values
-y_env = env["label"].values
-Xtr, Xte, ytr, yte = train_test_split(X_env, y_env, test_size=0.30, random_state=42, stratify=y_env)
+    def prepare_data(self, env_data, imu_data):
+        """
+        Prepara dados combinando sensores diferentes
+        Ref: "Data fusion techniques for machine learning in predictive maintenance"
+        """
+        # Janela deslizante para análise temporal
+        window_size = 20  # Baseado em estudos empíricos
+        features_list = []
+        labels = []
+        
+        for i in range(len(env_data) - window_size):
+            window_env = env_data.iloc[i:i+window_size]
+            window_imu = imu_data.iloc[i:i+window_size]
+            
+            # Extrai features de temperatura
+            temp_features = self.extract_features(window_env['temperature_c'])
+            humid_features = self.extract_features(window_env['humidity_pct'])
+            
+            # Extrai features de vibração
+            acc_x_features = self.extract_features(window_imu['acc_x_g'])
+            acc_y_features = self.extract_features(window_imu['acc_y_g'])
+            acc_z_features = self.extract_features(window_imu['acc_z_g'])
+            
+            # Combina todas as features
+            combined_features = {
+                **{f'temp_{k}': v for k, v in temp_features.items()},
+                **{f'humid_{k}': v for k, v in humid_features.items()},
+                **{f'acc_x_{k}': v for k, v in acc_x_features.items()},
+                **{f'acc_y_{k}': v for k, v in acc_y_features.items()},
+                **{f'acc_z_{k}': v for k, v in acc_z_features.items()}
+            }
+            
+            features_list.append(combined_features)
+            
+            # Define condições críticas baseadas em pesquisa industrial
+            # Calcula métricas
+            temp_max = window_env['temperature_c'].max()
+            humid_min = window_env['humidity_pct'].min()
+            humid_max = window_env['humidity_pct'].max()
+            acc_norm = np.sqrt(
+                window_imu['acc_x_g']**2 + 
+                window_imu['acc_y_g']**2 + 
+                window_imu['acc_z_g']**2
+            ).max()
+            
+            # Thresholds ajustados com base nos dados reais
+            is_critical = (
+                (temp_max > 35) or                # Temperatura crítica (mais conservador)
+                (humid_min < 40) or               # Umidade muito baixa
+                (humid_max > 70) or               # Umidade muito alta
+                (acc_norm > 2.8)                  # Aceleração anormal
+            )
+            
+            # Debug para os primeiros registros
+            if i < 5:
+                print(f"\nRegistro {i}:")
+                print(f"Temp Max: {temp_max:.2f}°C")
+                print(f"Humid Min: {humid_min:.2f}%")
+                print(f"Humid Max: {humid_max:.2f}%")
+                print(f"Acc Norm: {acc_norm:.2f}g")
+                print(f"Crítico: {is_critical}")
+            labels.append(1 if is_critical else 0)
+            
+        return pd.DataFrame(features_list), np.array(labels)
 
-clf_env = RandomForestClassifier(n_estimators=200, random_state=42)
-clf_env.fit(Xtr, ytr)
-pred_env = clf_env.predict(Xte)
+    def train(self, X, y):
+        """
+        Treina modelo com validação cruzada e otimização de hiperparâmetros
+        Ref: "Machine Learning for Predictive Maintenance: A Multiple Classifier Approach"
+        """
+        print("\nIniciando treinamento do modelo...")
+        
+        # Normaliza dados
+        X_scaled = self.scaler.fit_transform(X)
+        print("Dados normalizados")
+        
+        # Detecta anomalias
+        print("Treinando detector de anomalias...")
+        self.anomaly_detector.fit(X_scaled)
+        
+        # Otimiza hiperparâmetros
+        print("Otimizando hiperparâmetros...")
+        param_grid = {
+            'n_estimators': [100, 200, 300],
+            'max_depth': [10, 20, 30, None],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4]
+        }
+        
+        grid_search = GridSearchCV(
+            self.classifier, param_grid, cv=5, 
+            scoring='f1', n_jobs=-1, verbose=1
+        )
+        grid_search.fit(X_scaled, y)
+        
+        print(f"\nMelhores parâmetros encontrados: {grid_search.best_params_}")
+        
+        self.classifier = grid_search.best_estimator_
+        self.feature_importance = pd.DataFrame({
+            'feature': X.columns,
+            'importance': self.classifier.feature_importances_
+        }).sort_values('importance', ascending=False)
+        
+        return self.evaluate(X_scaled, y)
+    
+    def evaluate(self, X, y):
+        """
+        Avalia modelo com métricas múltiplas
+        """
+        print("\nAvaliando modelo...")
+        y_pred = self.classifier.predict(X)
+        precision, recall, f1, _ = precision_recall_fscore_support(y, y_pred, average='binary')
+        
+        # Gera matriz de confusão
+        cm = confusion_matrix(y, y_pred)
+        plt.figure(figsize=(8, 6))
+        plt.imshow(cm, interpolation='nearest', cmap='Blues')
+        plt.title("Matriz de Confusão")
+        plt.colorbar()
+        plt.xlabel("Predito")
+        plt.ylabel("Real")
+        plt.xticks([0,1], ["NORMAL","CRÍTICO"])
+        plt.yticks([0,1], ["NORMAL","CRÍTICO"])
+        
+        # Adiciona valores na matriz
+        for i in range(cm.shape[0]):
+            for j in range(cm.shape[1]):
+                plt.text(j, i, str(cm[i, j]),
+                        horizontalalignment="center",
+                        verticalalignment="center")
+        
+        plt.tight_layout()
+        plt.savefig(OUT_ENV_IMG)
+        plt.close()
+        
+        # Plot feature importance
+        plt.figure(figsize=(12, 6))
+        plt.bar(range(len(self.feature_importance)), self.feature_importance['importance'])
+        plt.xticks(range(len(self.feature_importance)), 
+                  self.feature_importance['feature'], rotation=45, ha='right')
+        plt.title("Importância das Features")
+        plt.tight_layout()
+        plt.savefig(OUT_FEATURE_IMPORTANCE)
+        plt.close()
+        
+        return {
+            'accuracy': accuracy_score(y, y_pred),
+            'precision': precision,
+            'recall': recall,
+            'f1': f1
+        }
+    
+    def predict(self, X):
+        """
+        Faz predições combinando classificador e detector de anomalias
+        """
+        X_scaled = self.scaler.transform(X)
+        anomalies = self.anomaly_detector.predict(X_scaled)
+        classifications = self.classifier.predict(X_scaled)
+        
+        # Combina resultados (-1 do IsolationForest indica anomalia)
+        return np.logical_or(anomalies == -1, classifications == 1)
 
-acc_env = accuracy_score(yte, pred_env)
-cm_env = confusion_matrix(yte, pred_env)
-
-print(f"[ENV] accuracy = {acc_env:.4f}")
-print("[ENV] confusion matrix:")
-print(cm_env)
-print("[ENV] classification report:")
-print(classification_report(yte, pred_env, target_names=["NORMAL","CRITICO"]))
-
-plt.figure()
-plt.imshow(cm_env, interpolation="nearest")
-plt.title("ENV - Matriz de Confusão")
-plt.xlabel("Predito"); plt.ylabel("Real")
-plt.xticks([0,1], ["NORMAL","CRITICO"])
-plt.yticks([0,1], ["NORMAL","CRITICO"])
-for (i, j), v in np.ndenumerate(cm_env):
-    plt.text(j, i, str(v), ha='center', va='center')
-plt.tight_layout()
-plt.savefig(OUT_ENV_IMG, dpi=140)
-plt.close()
-
-# ======================
-# 2) Dataset IMU (MPU6050)
-# ======================
-imu = pd.read_csv(os.path.join(DOC_DIR, "dataset_imu.csv"))
-
-# Norma do vetor de aceleração
-def norm(row):
-    return math.sqrt(row["acc_x_g"]**2 + row["acc_y_g"]**2 + row["acc_z_g"]**2)
-
-imu["g_norm"] = imu.apply(norm, axis=1)
-
-# Regra de rótulo: vibração alta => CRITICO
-imu["label"] = (imu["g_norm"] > 2.5).astype(int)
-
-X_imu = imu[["acc_x_g", "acc_y_g", "acc_z_g"]].values
-y_imu = imu["label"].values
-Xtr, Xte, ytr, yte = train_test_split(X_imu, y_imu, test_size=0.30, random_state=42, stratify=y_imu)
-
-clf_imu = RandomForestClassifier(n_estimators=200, random_state=42)
-clf_imu.fit(Xtr, ytr)
-pred_imu = clf_imu.predict(Xte)
-
-acc_imu = accuracy_score(yte, pred_imu)
-cm_imu = confusion_matrix(yte, pred_imu)
-
-print(f"[IMU] accuracy = {acc_imu:.4f}")
-print("[IMU] confusion matrix:")
-print(cm_imu)
-print("[IMU] classification report:")
-print(classification_report(yte, pred_imu, target_names=["NORMAL","CRITICO"]))
-
-plt.figure()
-plt.imshow(cm_imu, interpolation="nearest")
-plt.title("IMU - Matriz de Confusão")
-plt.xlabel("Predito"); plt.ylabel("Real")
-plt.xticks([0,1], ["NORMAL","CRITICO"])
-plt.yticks([0,1], ["NORMAL","CRITICO"])
-for (i, j), v in np.ndenumerate(cm_imu):
-    plt.text(j, i, str(v), ha='center', va='center')
-plt.tight_layout()
-plt.savefig(OUT_IMU_IMG, dpi=140)
-plt.close()
-
-print(f"[OK] Imagens salvas em:\n - {OUT_ENV_IMG}\n - {OUT_IMU_IMG}")
+if __name__ == "__main__":
+    print("Carregando dados...")
+    # Carrega dados
+    env_data = pd.read_csv(os.path.join(DOC_DIR, "dataset_env.csv"))
+    imu_data = pd.read_csv(os.path.join(DOC_DIR, "dataset_imu.csv"))
+    
+    print("\nInformações dos dados carregados:")
+    print("Dados ENV:")
+    print(env_data.info())
+    print("\nPrimeiras linhas ENV:")
+    print(env_data.head())
+    print("\nDados IMU:")
+    print(imu_data.info())
+    print("\nPrimeiras linhas IMU:")
+    print(imu_data.head())
+    
+    # Verifica nomes das colunas
+    print("\nColunas ENV:", env_data.columns.tolist())
+    print("Colunas IMU:", imu_data.columns.tolist())
+    
+    # Ajusta nomes das colunas se necessário
+    column_mapping_env = {
+        'timestamp': 'timestamp',
+        'temperature': 'temperature_c',
+        'humidity': 'humidity_pct'
+    }
+    
+    column_mapping_imu = {
+        'timestamp': 'timestamp',
+        'acc_x': 'acc_x_g',
+        'acc_y': 'acc_y_g',
+        'acc_z': 'acc_z_g'
+    }
+    
+    env_data = env_data.rename(columns={k: v for k, v in column_mapping_env.items() if k in env_data.columns})
+    imu_data = imu_data.rename(columns={k: v for k, v in column_mapping_imu.items() if k in imu_data.columns})
+    
+    print("\nPreparando modelo...")
+    # Inicializa e treina modelo
+    model = PredictiveMaintenanceModel()
+    X, y = model.prepare_data(env_data, imu_data)
+    
+    print("\nInformações dos dados processados:")
+    print("Shape de X:", X.shape)
+    print("Shape de y:", y.shape)
+    print("\nDistribuição das classes:")
+    print(pd.Series(y).value_counts())
+    
+    # Divide dados
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42
+    )
+    
+    print("\nTamanho dos conjuntos de treino/teste:")
+    print(f"X_train: {X_train.shape}")
+    print(f"X_test: {X_test.shape}")
+    print(f"y_train: {y_train.shape}")
+    print(f"y_test: {y_test.shape}")
+    
+    # Treina e avalia
+    metrics = model.train(X_train, y_train)
+    
+    # Imprime resultados
+    print("\nResultados do Modelo:")
+    for metric, value in metrics.items():
+        print(f"{metric}: {value:.4f}")
+        
+    print("\nFeatures mais importantes:")
+    print(model.feature_importance.head())
+    
+    print(f"\n[OK] Imagens salvas em:")
+    print(f" - {OUT_ENV_IMG}")
+    print(f" - {OUT_FEATURE_IMPORTANCE}")
