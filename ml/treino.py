@@ -2,6 +2,7 @@ import os
 import math
 import numpy as np
 import pandas as pd
+import joblib
 from scipy import stats
 from sklearn.ensemble import RandomForestClassifier, IsolationForest
 from sklearn.preprocessing import StandardScaler
@@ -19,6 +20,7 @@ DOC_DIR = os.path.join(REPO_DIR, "document")
 OUT_ENV_IMG = os.path.join(BASE_DIR, "env_confusion.png")
 OUT_IMU_IMG = os.path.join(BASE_DIR, "imu_confusion.png")
 OUT_FEATURE_IMPORTANCE = os.path.join(BASE_DIR, "feature_importance.png")
+MODEL_PATH = os.path.join(BASE_DIR, "modelo_treinado.pkl")
 
 class PredictiveMaintenanceModel:
     def __init__(self):
@@ -96,12 +98,12 @@ class PredictiveMaintenanceModel:
                 window_imu['acc_z_g']**2
             ).max()
             
-            # Thresholds ajustados com base nos dados reais
+            # Thresholds mais realistas baseados em operação industrial
             is_critical = (
-                (temp_max > 35) or                # Temperatura crítica (mais conservador)
-                (humid_min < 40) or               # Umidade muito baixa
-                (humid_max > 70) or               # Umidade muito alta
-                (acc_norm > 2.8)                  # Aceleração anormal
+                (temp_max > 40) or                # Temperatura crítica real
+                (humid_min < 30) or               # Umidade muito baixa
+                (humid_max > 80) or               # Umidade muito alta
+                (acc_norm > 3.0)                  # Aceleração anormal significativa
             )
             
             # Debug para os primeiros registros
@@ -283,6 +285,17 @@ if __name__ == "__main__":
         
     print("\nFeatures mais importantes:")
     print(model.feature_importance.head())
+    
+    # Salva apenas os componentes do modelo (não o objeto inteiro)
+    print(f"\nSalvando modelo treinado em: {MODEL_PATH}")
+    model_components = {
+        'scaler': model.scaler,
+        'anomaly_detector': model.anomaly_detector,
+        'classifier': model.classifier,
+        'feature_importance': model.feature_importance
+    }
+    joblib.dump(model_components, MODEL_PATH)
+    print("✅ Modelo salvo com sucesso!")
     
     print(f"\n[OK] Imagens salvas em:")
     print(f" - {OUT_ENV_IMG}")
