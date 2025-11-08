@@ -147,6 +147,81 @@ def load_from_csv():
 
 st.sidebar.header("Fonte de dados")
 source = st.sidebar.radio("Carregar dados de:", ["SQLite (database/factory.db)", "CSV (document/)"])
+
+st.sidebar.divider()
+st.sidebar.header("⚙️ Configurações de Alerta")
+st.sidebar.info("💡 Estes valores são usados tanto para alertas quanto para treinar a IA")
+
+# Carrega thresholds salvos ou usa padrões
+import json
+thresholds_file = Path("../ml/thresholds.json")
+if thresholds_file.exists():
+    with open(thresholds_file, 'r', encoding='utf-8') as f:
+        saved_thresholds = json.load(f)
+    default_temp = saved_thresholds.get('temp_max', 40.0)
+    default_h_min = saved_thresholds.get('humid_min', 30.0)
+    default_h_max = saved_thresholds.get('humid_max', 80.0)
+    default_acc = saved_thresholds.get('acc_norm', 3.0)
+else:
+    default_temp = 40.0
+    default_h_min = 30.0
+    default_h_max = 80.0
+    default_acc = 3.0
+
+TEMP_MAX = st.sidebar.number_input("Temperatura crítica (°C)", value=default_temp, min_value=0.0, max_value=100.0)
+H_MIN = st.sidebar.number_input("Umidade mínima crítica (%)", value=default_h_min, min_value=0.0, max_value=100.0)
+H_MAX = st.sidebar.number_input("Umidade máxima crítica (%)", value=default_h_max, min_value=0.0, max_value=100.0)
+ACC_THR = st.sidebar.number_input("Aceleração crítica (g)", value=default_acc, min_value=0.0, max_value=10.0)
+
+st.sidebar.divider()
+if st.sidebar.button("🔄 Retreinar IA com Estas Configurações", help="Retreina o modelo de IA usando os thresholds acima"):
+    with st.spinner("🧠 Retreinando modelo de IA..."):
+        try:
+            # Salva thresholds em arquivo temporário para o treino usar
+            import json
+            thresholds = {
+                'temp_max': TEMP_MAX,
+                'humid_min': H_MIN,
+                'humid_max': H_MAX,
+                'acc_norm': ACC_THR
+            }
+            with open(Path("../ml/thresholds.json"), 'w', encoding='utf-8') as f:
+                json.dump(thresholds, f)
+            
+            # Executa retreinamento
+            import subprocess
+            import sys
+            
+            # Usa o mesmo Python que está rodando o Streamlit
+            python_exe = sys.executable
+            treino_script = str(Path("../ml/treino.py").resolve())
+            
+            result = subprocess.run(
+                [python_exe, treino_script],
+                capture_output=True,
+                text=True,
+                cwd=str(Path("../ml").resolve()),
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            if result.returncode == 0:
+                st.sidebar.success("✅ IA retreinada com sucesso!")
+                st.sidebar.info("🔄 Atualizando dashboard...")
+                # Limpa cache do modelo
+                load_ai_model.clear()
+                # Recarrega a página automaticamente
+                st.rerun()
+            else:
+                st.sidebar.error("❌ Erro no retreinamento")
+                with st.sidebar.expander("Ver detalhes do erro"):
+                    st.code(result.stderr)
+        except Exception as e:
+            st.sidebar.error(f"❌ Erro: {str(e)}")
+            import traceback
+            with st.sidebar.expander("Ver traceback completo"):
+                st.code(traceback.format_exc())
+
 if source.startswith("SQLite"):
     env, imu = load_from_sqlite()
 else:
@@ -155,11 +230,6 @@ else:
 if env is None or imu is None:
     st.warning("Não encontrei os dados. Garanta que o banco foi populado (ou os CSVs existam).")
     st.stop()
-
-TEMP_MAX = st.sidebar.number_input("Alerta: Temperatura > (°C)", value=40.0)
-H_MIN   = st.sidebar.number_input("Alerta: Umidade < (%)", value=20.0)
-H_MAX   = st.sidebar.number_input("Alerta: Umidade > (%)", value=80.0)
-ACC_THR = st.sidebar.number_input("Alerta: Norma aceleração > (g)", value=2.5)
 
 st.subheader("🌡️ Ambiente (DHT22)")
 c1, c2, c3, c4 = st.columns(4)

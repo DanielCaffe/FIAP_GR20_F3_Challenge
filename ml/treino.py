@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import math
 import numpy as np
@@ -21,6 +22,20 @@ OUT_ENV_IMG = os.path.join(BASE_DIR, "env_confusion.png")
 OUT_IMU_IMG = os.path.join(BASE_DIR, "imu_confusion.png")
 OUT_FEATURE_IMPORTANCE = os.path.join(BASE_DIR, "feature_importance.png")
 MODEL_PATH = os.path.join(BASE_DIR, "modelo_treinado.pkl")
+THRESHOLDS_PATH = os.path.join(BASE_DIR, "thresholds.json")
+
+# Carrega thresholds personalizados ou usa padrões
+def load_thresholds():
+    import json
+    if os.path.exists(THRESHOLDS_PATH):
+        with open(THRESHOLDS_PATH, 'r') as f:
+            return json.load(f)
+    return {
+        'temp_max': 40.0,
+        'humid_min': 30.0,
+        'humid_max': 80.0,
+        'acc_norm': 3.0
+    }
 
 class PredictiveMaintenanceModel:
     def __init__(self):
@@ -53,11 +68,14 @@ class PredictiveMaintenanceModel:
         
         return features
 
-    def prepare_data(self, env_data, imu_data):
+    def prepare_data(self, env_data, imu_data, thresholds=None):
         """
         Prepara dados combinando sensores diferentes
         Ref: "Data fusion techniques for machine learning in predictive maintenance"
         """
+        if thresholds is None:
+            thresholds = load_thresholds()
+        
         # Janela deslizante para análise temporal
         window_size = 20  # Baseado em estudos empíricos
         features_list = []
@@ -87,8 +105,7 @@ class PredictiveMaintenanceModel:
             
             features_list.append(combined_features)
             
-            # Define condições críticas baseadas em pesquisa industrial
-            # Calcula métricas
+            # Define condições críticas usando thresholds dinâmicos
             temp_max = window_env['temperature_c'].max()
             humid_min = window_env['humidity_pct'].min()
             humid_max = window_env['humidity_pct'].max()
@@ -98,12 +115,12 @@ class PredictiveMaintenanceModel:
                 window_imu['acc_z_g']**2
             ).max()
             
-            # Thresholds mais realistas baseados em operação industrial
+            # Usa thresholds configuráveis
             is_critical = (
-                (temp_max > 40) or                # Temperatura crítica real
-                (humid_min < 30) or               # Umidade muito baixa
-                (humid_max > 80) or               # Umidade muito alta
-                (acc_norm > 3.0)                  # Aceleração anormal significativa
+                (temp_max > thresholds['temp_max']) or
+                (humid_min < thresholds['humid_min']) or
+                (humid_max > thresholds['humid_max']) or
+                (acc_norm > thresholds['acc_norm'])
             )
             
             # Debug para os primeiros registros
@@ -218,6 +235,14 @@ class PredictiveMaintenanceModel:
 
 if __name__ == "__main__":
     print("Carregando dados...")
+    # Carrega thresholds
+    thresholds = load_thresholds()
+    print(f"\nUsando thresholds:")
+    print(f"  Temperatura máxima: {thresholds['temp_max']}°C")
+    print(f"  Umidade mínima: {thresholds['humid_min']}%")
+    print(f"  Umidade máxima: {thresholds['humid_max']}%")
+    print(f"  Aceleração máxima: {thresholds['acc_norm']}g")
+    
     # Carrega dados
     env_data = pd.read_csv(os.path.join(DOC_DIR, "dataset_env.csv"))
     imu_data = pd.read_csv(os.path.join(DOC_DIR, "dataset_imu.csv"))
@@ -256,7 +281,7 @@ if __name__ == "__main__":
     print("\nPreparando modelo...")
     # Inicializa e treina modelo
     model = PredictiveMaintenanceModel()
-    X, y = model.prepare_data(env_data, imu_data)
+    X, y = model.prepare_data(env_data, imu_data, thresholds)
     
     print("\nInformações dos dados processados:")
     print("Shape de X:", X.shape)
@@ -295,7 +320,7 @@ if __name__ == "__main__":
         'feature_importance': model.feature_importance
     }
     joblib.dump(model_components, MODEL_PATH)
-    print("✅ Modelo salvo com sucesso!")
+    print("[OK] Modelo salvo com sucesso!")
     
     print(f"\n[OK] Imagens salvas em:")
     print(f" - {OUT_ENV_IMG}")
