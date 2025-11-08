@@ -1,1 +1,6 @@
-{"temp_max": 42.0, "humid_min": 25.0, "humid_max": 85.0, "acc_norm": 2.8}
+{
+  "temp_max": 45.0,      
+  "humid_min": 30.0,    
+  "humid_max": 80.0,     
+  "acc_norm": 3.0       
+}

@@ -5,6 +5,7 @@ import sqlite3
 import joblib
 import sys
 from pathlib import Path
+import altair as alt
 
 # Adiciona o diretório ml ao path para importar a classe do modelo
 sys.path.append(str(Path(__file__).parent.parent / "ml"))
@@ -239,15 +240,40 @@ c3.metric("Umidade média (%)", f"{env['humidity'].mean():.2f}")
 c4.metric("Umidade máx (%)", f"{env['humidity'].max():.2f}")
 
 colA, colB = st.columns(2)
-colA.line_chart(env["temperature"], height=230, width="stretch")
-colA.caption("Temperatura ao longo do tempo")
-colB.line_chart(env["humidity"], height=230, width="stretch")
-colB.caption("Umidade ao longo do tempo")
 
-env_alerts = env[(env["temperature"] > TEMP_MAX) | (env["humidity"] < H_MIN) | (env["humidity"] > H_MAX)]
-st.write(f"Alertas críticos (ENV): **{len(env_alerts)}**")
-if len(env_alerts) > 0:
+# Temperatura
+with colA:
+    st.markdown("### 🌡️ Temperatura ao longo do tempo")
+    st.line_chart(env["temperature"], height=300, use_container_width=True, color='#ff6b35')
+
+# Umidade
+with colB:
+    st.markdown("### 💧 Umidade ao longo do tempo")
+    st.line_chart(env["humidity"], height=300, use_container_width=True, color='#4a90e2')
+
+# Identifica quais sensores estão críticos
+temp_alerts = env[env["temperature"] > TEMP_MAX]
+humid_low_alerts = env[env["humidity"] < H_MIN]
+humid_high_alerts = env[env["humidity"] > H_MAX]
+
+total_env_alerts = len(env[(env["temperature"] > TEMP_MAX) | (env["humidity"] < H_MIN) | (env["humidity"] > H_MAX)])
+
+st.write(f"Alertas críticos (ENV): **{total_env_alerts}**")
+
+if total_env_alerts > 0:
     st.error("⚠️ ALERTA: leituras críticas detectadas (ENV).")
+    
+    # Mostra detalhes por tipo de alerta
+    alert_details = []
+    if len(temp_alerts) > 0:
+        alert_details.append(f"🌡️ **Temperatura alta**: {len(temp_alerts)} leituras acima de {TEMP_MAX}°C (máx: {temp_alerts['temperature'].max():.1f}°C)")
+    if len(humid_low_alerts) > 0:
+        alert_details.append(f"💧 **Umidade baixa**: {len(humid_low_alerts)} leituras abaixo de {H_MIN}% (mín: {humid_low_alerts['humidity'].min():.1f}%)")
+    if len(humid_high_alerts) > 0:
+        alert_details.append(f"💧 **Umidade alta**: {len(humid_high_alerts)} leituras acima de {H_MAX}% (máx: {humid_high_alerts['humidity'].max():.1f}%)")
+    
+    for detail in alert_details:
+        st.warning(detail)
 else:
     st.success("✅ Sem alertas críticos em ENV.")
 
@@ -261,10 +287,14 @@ d1.metric("Norma média (g)", f"{imu['acc_norm'].mean():.2f}")
 d2.metric("Norma máx (g)",  f"{imu['acc_norm'].max():.2f}")
 d3.metric("Alertas críticos (IMU)", f"{(imu['acc_norm'] > ACC_THR).sum()}")
 
-st.line_chart(imu["acc_norm"], height=230, use_container_width=True)
+st.markdown("### 📳 Vibração (norma da aceleração)")
+st.line_chart(imu["acc_norm"], height=300, use_container_width=True, color='#e74c3c')
+
 imu_alert = (imu["acc_norm"] > ACC_THR).sum()
 if imu_alert > 0:
     st.error("⚠️ ALERTA: vibração/tremor acima do limite (IMU).")
+    max_vibration = imu["acc_norm"].max()
+    st.warning(f"📳 **Vibração crítica**: {imu_alert} leituras acima de {ACC_THR:.1f}G (máx: {max_vibration:.2f}G)")
 else:
     st.success("✅ Sem alertas críticos em IMU.")
 
@@ -322,19 +352,45 @@ if model_components is not None:
                 st.success("✅ A IA não detectou padrões críticos. Sistema operando normalmente!")
             
             # Gráfico de predições ao longo do tempo
-            st.subheader("Predições da IA ao longo do tempo")
-            pred_df = pd.DataFrame({
-                'Análise': range(len(predictions)),
-                'Estado': ['CRÍTICO' if p else 'NORMAL' for p in predictions],
-                'Valor': [1 if p else 0 for p in predictions]
+            st.subheader("🔍 Períodos Detectados pela IA")
+            
+            # Criar visualização mais limpa e espaçada
+            pred_series = pd.Series([1 if p else 0 for p in predictions])
+            
+            # Agrupar janelas em blocos para visualização mais limpa
+            block_size = 10  # Agrupa a cada 10 janelas
+            blocks = []
+            for i in range(0, len(pred_series), block_size):
+                block = pred_series[i:i+block_size]
+                # Percentual crítico no bloco
+                pct_critico = (block.sum() / len(block)) * 100
+                blocks.append(pct_critico)
+            
+            # Criar DataFrame para visualização
+            chart_data = pd.DataFrame({
+                'Criticidade (%)': blocks
             })
             
-            st.line_chart(pred_df.set_index('Análise')['Valor'], height=200, width="stretch")
-            st.caption("1 = CRÍTICO | 0 = NORMAL")
+            st.markdown("### 🤖 Taxa de Criticidade por Bloco de Análise")
+            st.area_chart(chart_data, height=300, use_container_width=True, color='#ff4444')
+            
+            # Estatísticas resumidas
+            col_stat1, col_stat2, col_stat3 = st.columns(3)
+            with col_stat1:
+                janelas_criticas = int(pred_series.sum())
+                st.metric("🚨 Janelas Críticas", f"{janelas_criticas}/{len(predictions)}")
+            with col_stat2:
+                taxa_pct = (janelas_criticas / len(predictions)) * 100
+                st.metric("📊 Taxa Global", f"{taxa_pct:.1f}%")
+            with col_stat3:
+                blocos_criticos = sum(1 for b in blocks if b > 50)
+                st.metric("⚠️ Blocos Problemáticos", f"{blocos_criticos}/{len(blocks)}")
+            
+            st.caption(f"💡 Cada ponto no gráfico = média de {block_size} janelas (~{block_size*20}s) | 100% = todas críticas, 0% = todas normais")
             
             # Comparação: Regras vs IA
             st.subheader("📊 Comparação: Regras Manuais vs IA")
-            alertas_regras = len(env_alerts) + imu_alert
+            alertas_regras = total_env_alerts + imu_alert
             
             comp_col1, comp_col2 = st.columns(2)
             comp_col1.metric("🔧 Alertas (Regras Manuais)", alertas_regras)
